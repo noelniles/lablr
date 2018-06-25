@@ -1,6 +1,5 @@
 const fs = require('fs')
 const path = require('path')
-let files = []
 
 
 function shuffle(a) {
@@ -16,57 +15,67 @@ function shuffle(a) {
     return a
 }
 
-function draw(e) {
-    if (!isdrawing) return
+function produce_files() {
+    // Construct the path to the data.
+    const folder = path.join('./data/pibeach-0003')
 
+    files = []
+    fs.readdirSync(folder).forEach(file =>{
+        fullpath = path.join(folder, file)
+        files.push(fullpath)
+    })
+    files = shuffle(files)
+    return files
 }
 
-function workspace() {
-    return {
-        isdrawing: false,
-        current_image: new Image(),
-        files: this.produce_files,
-        canvas: document.getElementById('workspace'),
-        context: this.canvas.getContext("2d"),
+class workspace {
+    constructor(canvas, context, files) {
+        let self = this // This is so we can use this inside the onload function.
+        this.canvas = canvas
+        this.context = context
+        this.isdrawing = false
+        this.files = files
+        this.current_index = 0
+        this.previous_index = 0
 
-        init: function() {
-            canvas.addEventListener('mousedown', () => isdrawing = true)
-            canvas.addEventListener('mousemove', draw)
-            canvas.addEventListener('mouseup', () => isdrawing = false)
-            canvas.addEventListener('mouseout', () => isdrawing = false)
-        },
+        this.canvas.addEventListener('mousedown', () => this.isdrawing = true)
+        this.canvas.addEventListener('mousemove', this.draw)
+        this.canvas.addEventListener('mouseup', () => this.isdrawing = false)
+        this.canvas.addEventListener('mouseout', () => this.isdrawing = false)
 
-        produce_files: function* () {
-            // Construct the path to the data.
-            const folder = path.join('./pibeach-0004')
-
-            files = []
-            fs.readdirSync(folder).forEach(file =>{
-                fullpath = path.join(folder, file)
-                files.push(fullpath)
-            })
-            files = shuffle(files)
-            console.log('files: ', files)
-
-            for (let f of files) {
-                console.log(f)
-                yield f
-            }
-        },
-
-        draw: function() {
-            console.log('Drawing..............')
-            this.context.drawImage(this.current_image, 0, 0,
-                this.canvas.width, this.canvas.height)
-            this.current_image.src = files.next().value
+        this.current_image = new Image()
+        this.current_image.onload = function () {
+            self.load_image(self.current_index)
         }
-
+        console.log('First file: ', this.files[this.current_index])
+        this.current_image.src = this.files[this.current_index]
     }
+
+    load_image(i) {
+        this.previous_index = this.current_index
+        this.current_index = i
+        this.context.drawImage(this.current_image, 0, 0, this.canvas.width, this.canvas.height)
+    }
+
+    draw() {
+        this.isdrawing = true
+    }
+
+    next() {
+        let next_index = this.current_index + 1
+        this.load_image(next_index)
+    }
+
 }
+
 window.onload = function() {
-    let ws = workspace()
-    ws.init()
-    ws.draw()
+    let canvas = document.getElementById('workspace')
+    let context = canvas.getContext("2d")
+    let next_button = document.getElementById('next-btn')
+    let files = produce_files()
+
+    let ws = new workspace(canvas, context, files)
+    next_button.addEventListener('click', ws.next)
 
     //// Initialize the canvas.
     //init(canvas)
