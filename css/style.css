@@ -1,0 +1,15 @@
+.canvas-container{
+    position: relative;
+  }
+  #workspace {
+    position: absolute;
+    width: 3280;
+    height: 2484;
+    background-color:lightgrey;
+  }
+  #next-btn {
+    position:absolute;
+    left:30%;
+    top:0%;
+    font-size: 36px;
+  }
