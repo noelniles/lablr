@@ -20,7 +20,7 @@ function produce_files(directory) {
         return
     }
     // Construct the path to the data.
-    const folder = path.join('./data/pibeach-0003')
+    const folder = path.join(directory)
 
     files = []
     fs.readdirSync(folder).forEach(file =>{
