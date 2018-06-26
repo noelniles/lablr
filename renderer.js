@@ -32,13 +32,13 @@ function produce_files(directory) {
 }
 
 class workspace {
-    constructor(canvas, context, files) {
+    constructor(canvas, context) {
         let self = this // This is so we can use this inside the onload function.
         this.data_directory = ''
         this.canvas = canvas
         this.context = context
         this.isdrawing = false
-        this.files = files
+        this.files = []
         this.current_index = 0
         this.previous_index = 0
 
@@ -48,22 +48,22 @@ class workspace {
         this.canvas.addEventListener('mouseout', () => this.isdrawing = false)
 
         this.current_image = new Image()
+
         this.current_image.onload = function () {
-            self.load_image(self.current_index)
+            self.context.drawImage(self.current_image, 0, 0, self.canvas.width, self.canvas.height)
         }
-        console.log('First file: ', this.files[this.current_index])
-        this.current_image.src = this.files[this.current_index]
     }
 
     add_files(files) {
         // Add a list of files to the workspace.
-        this.files.push()
+        this.files.push(...files)
     }
 
     load_image(i) {
         this.previous_index = this.current_index
         this.current_index = i
-        this.context.drawImage(this.current_image, 0, 0, this.canvas.width, this.canvas.height)
+        let filename = this.files[this.current_index]
+        this.current_image.src = filename
     }
 
     draw() {
@@ -82,13 +82,17 @@ window.onload = function() {
     let go_button = document.getElementById('go')
     let url_box = document.getElementById('img-url')
 
+    // Make a workstation.
     let ws = new workspace(canvas, context)
+
+    // Connect the buttons.
     let next_button = document.getElementById('next-btn')
     next_button.addEventListener('click', ws.next)
+
     go_button.addEventListener('click', function() {
         let directory = url_box.value
         let files = produce_files(directory)
         ws.add_files(files)
+        ws.next()
     })
-    ws.next()
 }
