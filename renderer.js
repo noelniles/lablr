@@ -15,7 +15,10 @@ function shuffle(a) {
     return a
 }
 
-function produce_files() {
+function produce_files(directory) {
+    if (directory === '') {
+        return
+    }
     // Construct the path to the data.
     const folder = path.join('./data/pibeach-0003')
 
@@ -31,6 +34,7 @@ function produce_files() {
 class workspace {
     constructor(canvas, context, files) {
         let self = this // This is so we can use this inside the onload function.
+        this.data_directory = ''
         this.canvas = canvas
         this.context = context
         this.isdrawing = false
@@ -51,6 +55,11 @@ class workspace {
         this.current_image.src = this.files[this.current_index]
     }
 
+    add_files(files) {
+        // Add a list of files to the workspace.
+        this.files.push()
+    }
+
     load_image(i) {
         this.previous_index = this.current_index
         this.current_index = i
@@ -65,30 +74,21 @@ class workspace {
         let next_index = this.current_index + 1
         this.load_image(next_index)
     }
-
 }
 
 window.onload = function() {
     let canvas = document.getElementById('workspace')
     let context = canvas.getContext("2d")
+    let go_button = document.getElementById('go')
+    let url_box = document.getElementById('img-url')
+
+    let ws = new workspace(canvas, context)
     let next_button = document.getElementById('next-btn')
-    let files = produce_files()
-
-    let ws = new workspace(canvas, context, files)
     next_button.addEventListener('click', ws.next)
-
-    //// Initialize the canvas.
-    //init(canvas)
-    //// Connect all the listeners.
-    //img = new Image()
-    //let gen = produce_files()
-
-    //img.onload = function() {
-    //    context.drawImage(img, 0, 0, canvas.width, canvas.height)
-    //}
-    //img.src = gen.next().value
-
-    //document.getElementById('next-btn').onclick = function() {
-    //   img.src = gen.next().value
-    //}
+    go_button.addEventListener('click', function() {
+        let directory = url_box.value
+        let files = produce_files(directory)
+        ws.add_files(files)
+    })
+    ws.next()
 }
