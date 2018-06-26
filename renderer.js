@@ -41,11 +41,20 @@ class workspace {
         this.files = []
         this.current_index = 0
         this.previous_index = 0
+        this.lastX = 0
+        this.lasty = 0
+        this.mousepressed = false
 
-        this.canvas.addEventListener('mousedown', () => this.isdrawing = true)
-        this.canvas.addEventListener('mousemove', this.draw)
-        this.canvas.addEventListener('mouseup', () => this.isdrawing = false)
-        this.canvas.addEventListener('mouseout', () => this.isdrawing = false)
+        this.canvas.addEventListener('mousedown', () => this.mousepressed = true)
+        this.canvas.addEventListener('mousemove', function(e) {
+            if (self.mousepressed) {
+                let posX = e.pageX
+                let posY = e.pageY
+                self.draw(posX, posY, true)
+            }
+        })
+        this.canvas.addEventListener('mouseup', () => this.mousepressed = false)
+        this.canvas.addEventListener('mouseout', () => this.mousepressed = false)
 
         this.current_image = new Image()
 
@@ -66,8 +75,19 @@ class workspace {
         this.current_image.src = filename
     }
 
-    draw() {
-        this.isdrawing = true
+    draw(x, y, isdown) {
+        if (isdown) {
+            this.context.beginPath()
+            this.context.strokeStyle = 'red'
+            this.context.lineJoin = 'round'
+            this.context.moveTo(this.lastX, this.lastY)
+            this.context.lineTo(x, y)
+            this.context.closePath()
+            this.context.stroke()
+        }
+        this.lastX = x
+        this.lastY = y
+
     }
 
     next() {
@@ -77,6 +97,7 @@ class workspace {
 }
 
 window.onload = function() {
+    let hasfiles = false
     let canvas = document.getElementById('workspace')
     let context = canvas.getContext("2d")
     let go_button = document.getElementById('go')
@@ -87,7 +108,12 @@ window.onload = function() {
 
     // Connect the buttons.
     let next_button = document.getElementById('next-btn')
-    next_button.addEventListener('click', ws.next)
+    next_button.addEventListener('click', function() {
+        if (!hasfiles) {
+            return
+        }
+        ws.next()
+    })
 
     go_button.addEventListener('click', function() {
         let directory = url_box.value
