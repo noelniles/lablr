@@ -44,6 +44,7 @@ class workspace {
         this.lastX = 0
         this.lasty = 0
         this.mousepressed = false
+        this.points = []
 
         this.canvas.addEventListener('mousedown', () => this.mousepressed = true)
         this.canvas.addEventListener('mousemove', function(e) {
@@ -82,6 +83,7 @@ class workspace {
             this.context.lineJoin = 'round'
             this.context.moveTo(this.lastX, this.lastY)
             this.context.lineTo(x, y)
+            this.points.push([x, y])
             this.context.closePath()
             this.context.stroke()
         }
@@ -94,6 +96,11 @@ class workspace {
         let next_index = this.current_index + 1
         this.load_image(next_index)
     }
+
+    save() {
+        console.log('saving')
+        console.log('points: ', this.points)
+    }
 }
 
 window.onload = function() {
@@ -102,6 +109,7 @@ window.onload = function() {
     let context = canvas.getContext("2d")
     let go_button = document.getElementById('go')
     let url_box = document.getElementById('img-url')
+    let points = []
 
     // Make a workstation.
     let ws = new workspace(canvas, context)
@@ -110,15 +118,22 @@ window.onload = function() {
     let next_button = document.getElementById('next-btn')
     next_button.addEventListener('click', function() {
         if (!hasfiles) {
+            console.log('no files')
             return
         }
         ws.next()
+    })
+
+    save_button = document.getElementById('save-btn')
+    save_button.addEventListener('click', function() {
+        ws.save()
     })
 
     go_button.addEventListener('click', function() {
         let directory = url_box.value
         let files = produce_files(directory)
         ws.add_files(files)
+        hasfiles = true
         ws.next()
     })
 }
