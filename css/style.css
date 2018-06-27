@@ -1,15 +1,21 @@
+.canvas {
+  cursor: crosshair;
+}
+
 .canvas-container{
     position: relative;
-  }
-  #workspace {
-    position: absolute;
-    width: 820;
-    height: 616;
-    background-color:lightgrey;
-  }
-  #next-btn {
-    position:absolute;
-    left:30%;
-    top:0%;
-    font-size: 36px;
-  }
+}
+
+#workspace {
+  position: absolute;
+  width: 820;
+  height: 616;
+  background-color:lightgrey;
+}
+
+#next-btn {
+  position:absolute;
+  left:30%;
+  top:0%;
+  font-size: 36px;
+}

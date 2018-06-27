@@ -43,6 +43,8 @@ class workspace {
         this.previous_index = 0
         this.lastX = 0
         this.lasty = 0
+        this.last_width = 0
+        this.last_height = 0
         this.mousepressed = false
         this.points = []
         this.operating_mode = 'draw'
@@ -96,11 +98,19 @@ class workspace {
         }
         else if (this.operating_mode == 'crop') {
             console.log('cropping stuff')
-
+            let mousex = x
+            let mousey = y
+            let width = mousex - this.lastX
+            let height = mousey - this.lastY
+            this.last_width = width
+            this.last_height = height
+            this.context.beginPath()
+            this.context.strokeStyle = 'red'
+            this.context.lineJoin = 'round'
+            this.context.rect(this.lastX, this.lastY, width, height)
+            this.context.stroke()
         }
     }
-
-    
 
     next() {
         let next_index = this.current_index + 1
