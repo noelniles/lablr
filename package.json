@@ -11,5 +11,8 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "electron": "^2.0.3"
+  },
+  "dependencies": {
+    "mongodb": "^3.0.10"
   }
 }
