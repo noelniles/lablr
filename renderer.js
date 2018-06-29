@@ -49,8 +49,8 @@ class workspace {
         this.canvas.addEventListener('mousedown', () => this.mousepressed = true)
         this.canvas.addEventListener('mousemove', function(e) {
             if (self.mousepressed) {
-                let posX = e.pageX
-                let posY = e.pageY
+                let posX = e.pageX - this.offsetLeft
+                let posY = e.pageY - this.offsetTop
                 self.draw(posX, posY, true)
             }
         })
