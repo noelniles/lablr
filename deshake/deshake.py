@@ -3,6 +3,7 @@ import sys
 from glob import glob
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -53,6 +54,19 @@ def spectrum_magnitude(img):
     cv2.normalize(Imag, Imag, 0, 1, cv2.NORM_MINMAX)
     return Imag
 
+def deshake_corners(ref, off):
+    src = cv2.cornerHarris(np.float32(ref), 2, 3, 0.04)
+    dst = cv2.cornerHarris(np.float32(off), 2, 3, 0.04)
+    xform = cv2.estimateRigidTransform(np.uint8(ref), np.uint8(off), True)
+    return xform
+
+def find_peaks(img):
+    """Find the peaks in the image."""
+
+    peaks = cv2.minMaxLoc(img)
+    print(peaks)
+    return peaks
+    
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', '--input', type=str, required=True)
@@ -70,20 +84,37 @@ if __name__ == '__main__':
     ref_mag = spectrum_magnitude(ref_img)
     offset_mag = spectrum_magnitude(offset_img)
 
-    src = cv2.cornerHarris(np.float32(ref_img), 2, 5, 0.5)
-    dst = cv2.cornerHarris(np.float32(offset_img), 2, 5, 0.5)
-    xform = cv2.estimateRigidTransform(np.uint8(src), np.uint8(dst), True)
-    print(xform)
+    ref_peaks = find_peaks(ref_mag)
+    off_peaks = find_peaks(offset_mag)
 
-    cv2.namedWindow('reference magnitude spectrum')
-    cv2.namedWindow('offset magnitude spectrum')
+    #xform = cv2.estimateRigidTransform(np.uint8(ref_peaks), np.uint8(off_peaks), True)
+    xform = deshake_corners(ref_img, offset_img)
+    print('xform: ', xform)
 
-    cv2.imshow('reference spectrum magnitude', ref_mag)
-    cv2.imshow('offset magnitude spectrum', src)
+    plt.subplot(2,2,1)
+    plt.tick_params(labelcolor='black', top='off', bottom='off', left='off', right='off')
+    plt.imshow(ref_img, cmap='gray')
+    plt.axis("off")
+    plt.xlabel("Input image")
 
-    if cv2.waitKey(0) == ord('q'):
-        cv2.destroyAllWindows()
-        sys.exit()
+    plt.subplot(2,2,2)
+    plt.tick_params(labelcolor='none', top='off', bottom='off', left='off', right='off')
+    plt.imshow(offset_img, cmap='gray')
+    plt.axis("off")
+    plt.xlabel("Offset image")
+
+    plt.subplot(2,2,3)
+    plt.imshow(ref_mag, cmap='gray')
+    plt.axis("off")
+    plt.xlabel("Reference peaks")
+
+    plt.subplot(2,2,4)
+    plt.imshow(offset_mag, cmap='gray')
+    plt.axis("off")
+    plt.xlabel("Offset peaks")
+
+    plt.show()
+
 
 
 
