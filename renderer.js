@@ -43,11 +43,16 @@ class workspace {
         this.previous_index = 0
         this.lastX = 0
         this.lasty = 0
+        this.last_width = 0
+        this.last_height = 0
         this.mousepressed = false
         this.points = []
+        this.operating_mode = 'draw'
 
         this.canvas.addEventListener('mousedown', () => this.mousepressed = true)
         this.canvas.addEventListener('mousemove', function(e) {
+            // Right click means we're marking background pixels
+            let drawing_background = e.button === 2
             if (self.mousepressed) {
                 let posX = e.pageX - this.offsetLeft
                 let posY = e.pageY - this.offsetTop
@@ -77,19 +82,34 @@ class workspace {
     }
 
     draw(x, y, isdown) {
-        if (isdown) {
+        if (this.operating_mode === 'draw') {
+            if (isdown) {
+                this.context.beginPath()
+                this.context.strokeStyle = 'red'
+                this.context.lineJoin = 'round'
+                this.context.moveTo(this.lastX, this.lastY)
+                this.context.lineTo(x, y)
+                this.points.push([x, y])
+                this.context.closePath()
+                this.context.stroke()
+            }
+            this.lastX = x
+            this.lastY = y
+        }
+        else if (this.operating_mode == 'crop') {
+            console.log('cropping stuff')
+            let mousex = x
+            let mousey = y
+            let width = mousex - this.lastX
+            let height = mousey - this.lastY
+            this.last_width = width
+            this.last_height = height
             this.context.beginPath()
             this.context.strokeStyle = 'red'
             this.context.lineJoin = 'round'
-            this.context.moveTo(this.lastX, this.lastY)
-            this.context.lineTo(x, y)
-            this.points.push([x, y])
-            this.context.closePath()
+            this.context.rect(this.lastX, this.lastY, width, height)
             this.context.stroke()
         }
-        this.lastX = x
-        this.lastY = y
-
     }
 
     next() {
@@ -135,5 +155,10 @@ window.onload = function() {
         ws.add_files(files)
         hasfiles = true
         ws.next()
+    })
+
+    crop_button = document.getElementById('crop-btn')
+    crop_button.addEventListener('click', function(e) {
+        ws.operating_mode = 'crop'
     })
 }
