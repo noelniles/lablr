@@ -10,6 +10,7 @@ from PyQt5.QtCore import QPoint
 from PyQt5.QtCore import QRect
 from PyQt5.QtCore import QRectF
 from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QPen
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QImage
@@ -30,10 +31,13 @@ class Canvas(QGraphicsScene):
         self.image = QImage()
         self.last_point = QPoint()
         self.modified = False
+        
+    def set_mode(self, mode):
+        self.mode = mode
 
     def setImage(self, filename):
-        pixmap = QPixmap(filename)
-        self.addPixmap(pixmap)
+        self.pixmap = QPixmap(filename)
+        self.addPixmap(self.pixmap)
         self.image = QImage(filename)
 
     def mouseMoveEvent(self, e):
@@ -52,9 +56,13 @@ class Canvas(QGraphicsScene):
             self.is_drawing = False
 
     def paintEvent(self, e):
-        painter = QPainter(self)
+        painter = QPainter(self.image)
+        painter.setRenderingHint(QPainter.Antialiasing)
+        pen = QPen(Qt.red, 3)
+        brush = 
         dirty_rect = e.rect()
-        painter.drawImage(dirty_rect, self.image, dirty_rect)
+        painter.drawImage(dirty_rect, self, dirty_rect)
+        painter.end()
 
     def drawLineTo(self, endpoint):
         print('drawing a line')
@@ -64,8 +72,8 @@ class Canvas(QGraphicsScene):
         self.modified = True
         rad = 3 / 2 + 2
         self.update(QRectF(self.last_point, endpoint).normalized().adjusted(-rad, -rad, +rad, +rad))
+        painter.end()
         self.last_point = QPoint(endpoint.toPoint())
-
 
 
 class ROISelector(Ui_ROI):
@@ -75,7 +83,7 @@ class ROISelector(Ui_ROI):
         self.setupUi(self.mainwindow)
 
         self.image_list = []
-        self.current_index = 0
+        self.current_index = 170
         self.current_image_name = None
         self.scene = Canvas(self.mainwindow)
 
@@ -83,7 +91,38 @@ class ROISelector(Ui_ROI):
 
         self.mode = 'crop'
         self.set_icons()
+        self.connect_buttons()
+        self.previously_selected_button = self.crop_btn
+
+    def connect_buttons(self):
+        self.save_btn.clicked.connect(self.on_save)
+        self.crop_btn.clicked.connect(self.on_crop)
+        self.lines_btn.clicked.connect(self.on_lines)
+
+    def on_save(self):
+        print('saving')
+        self.mode = 'save'
+        self.scene.set_mode(self.mode)
+        self.previously_selected_button.setEnabled(True)
+        self.previously_selected_button = self.save_btn
+        self.save_btn.setEnabled(False)
+
+    def on_crop(self):
+        print('cropping')
+        self.mode = 'crop'
+        self.scene.set_mode(self.mode)
+        self.previously_selected_button.setEnabled(True)
+        self.previously_selected_button = self.crop_btn
+        self.crop_btn.setEnabled(False)
      
+    def on_lines(self):
+        print('drawing lines')
+        self.mode = 'lines'
+        self.scene.set_mode(self.mode)
+        self.previously_selected_button.setEnabled(True)
+        self.previously_selected_button = self.lines_btn
+        self.lines_btn.setEnabled(False)
+
     def set_icons(self):
         save_icon = QIcon('icons/save.svg')
         crop_icon = QIcon('icons/crop.svg')
@@ -110,7 +149,6 @@ class ROISelector(Ui_ROI):
         
     def set_data_directory(self, path):
         self.url_bar.setText(path)
-
 
 
 def cli():
