@@ -87,9 +87,17 @@
      <x>0</x>
      <y>0</y>
      <width>879</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFiles">
+    <property name="title">
+     <string>Files</string>
+    </property>
+    <addaction name="import_action"/>
+    <addaction name="export_action"/>
+   </widget>
+   <addaction name="menuFiles"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -100,6 +108,16 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="import_action">
+   <property name="text">
+    <string>Import ROI</string>
+   </property>
+  </action>
+  <action name="export_action">
+   <property name="text">
+    <string>Export ROI</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
