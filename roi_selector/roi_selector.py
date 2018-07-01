@@ -132,7 +132,6 @@ class Canvas(QGraphicsScene):
         self.transect_lines.append(line)
         self.addLine(line, self.pen)
 
-
     def drawLineTo(self, endpoint):
         print('drawing a line')
         self.modified = True
@@ -164,6 +163,19 @@ class Canvas(QGraphicsScene):
                 # do something with the pixmap.
 
         return {'lines': lines, 'ellipses': ellipses}
+
+    def draw_roi(self, roi):
+        lines = roi['lines']
+        for x1, y1, x2, y2, in lines:
+            line = QLineF(x1, y1, x2, y2)
+            self.transect_lines.append(line)
+            self.addLine(line, self.pen)
+
+    def clear(self):
+        for item in self.items():
+            tp = type(item)
+            if tp is QGraphicsEllipseItem or tp is QGraphicsLineItem:
+                self.removeItem(item)
             
 
 class ROISelector(Ui_ROI):
@@ -186,6 +198,27 @@ class ROISelector(Ui_ROI):
         self.save_btn.clicked.connect(self.on_save)
         self.crop_btn.clicked.connect(self.on_crop)
         self.lines_btn.clicked.connect(self.on_lines)
+        self.clear_btn.clicked.connect(self.on_clear)
+        self.import_action.triggered.connect(self.on_import)
+        self.export_action.triggered.connect(self.on_save)
+
+    def on_clear(self):
+        self.scene.clear()
+
+    def on_import(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            self.mainwindow, 'Import a region of interest', None, 'JSON(*.json)'
+        )
+        if not filename:
+            return
+
+        roi = None
+        with open(filename, 'r') as fd:
+            roi = json.load(fd)
+
+        self.scene.draw_roi(roi)
+
+        print('roi: ', roi)
 
     def on_save(self):
         print('saving')
@@ -196,21 +229,14 @@ class ROISelector(Ui_ROI):
         self.save_btn.setEnabled(False)
         graphics = self.scene.graphics_items()
 
-        home = os.path.expanduser('~')
-        settings_path = os.path.join(home, '.ibeach/roi')
         filename, _ = QFileDialog.getSaveFileName(
-            self.mainwindow, 'Save region of interest', settings_path, 'JSON(*.json)')
+            self.mainwindow, 'Save region of interest', None, 'JSON(*.json)'
+        )
 
         with open(filename, 'w') as fd:
             json.dump(graphics, fd)
 
         print('Saved region of interest to {}'.format(filename))
-
-
-
-        print('filename', filename)
-
-        print('graphics: ', graphics)
 
     def on_crop(self):
         print('cropping')
@@ -232,9 +258,11 @@ class ROISelector(Ui_ROI):
         save_icon = QIcon('icons/save.svg')
         crop_icon = QIcon('icons/crop.svg')
         line_icon = QIcon('icons/draw_lines.svg')
+        clear_icon = QIcon('icons/clear.svg')
         self.save_btn.setIcon(save_icon)
         self.crop_btn.setIcon(crop_icon)
         self.lines_btn.setIcon(line_icon)
+        self.clear_btn.setIcon(clear_icon)
 
     def wheelEvent(self, event):
         print('Wheeeeeeeeeeeel')

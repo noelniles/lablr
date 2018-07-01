@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'roi.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -19,7 +19,6 @@ class Ui_ROI(object):
         self.gridLayout.setSpacing(6)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setContentsMargins(11, 11, 11, 11)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName("verticalLayout")
         self.crop_btn = QtWidgets.QToolButton(self.centralWidget)
@@ -34,6 +33,9 @@ class Ui_ROI(object):
         self.lines_btn.setObjectName("lines_btn")
         self.buttonGroup.addButton(self.lines_btn)
         self.verticalLayout.addWidget(self.lines_btn)
+        self.clear_btn = QtWidgets.QToolButton(self.centralWidget)
+        self.clear_btn.setObjectName("clear_btn")
+        self.verticalLayout.addWidget(self.clear_btn)
         self.save_btn = QtWidgets.QToolButton(self.centralWidget)
         self.save_btn.setToolTip("")
         self.save_btn.setObjectName("save_btn")
@@ -41,11 +43,9 @@ class Ui_ROI(object):
         self.verticalLayout.addWidget(self.save_btn)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setContentsMargins(11, 11, 11, 11)
         self.verticalLayout_2.setSpacing(6)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setContentsMargins(11, 11, 11, 11)
         self.horizontalLayout.setSpacing(6)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.url_bar = QtWidgets.QLineEdit(self.centralWidget)
@@ -61,8 +61,10 @@ class Ui_ROI(object):
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 1, 1, 1)
         ROI.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(ROI)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 879, 25))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 879, 23))
         self.menuBar.setObjectName("menuBar")
+        self.menuFiles = QtWidgets.QMenu(self.menuBar)
+        self.menuFiles.setObjectName("menuFiles")
         ROI.setMenuBar(self.menuBar)
         self.mainToolBar = QtWidgets.QToolBar(ROI)
         self.mainToolBar.setObjectName("mainToolBar")
@@ -70,6 +72,13 @@ class Ui_ROI(object):
         self.statusBar = QtWidgets.QStatusBar(ROI)
         self.statusBar.setObjectName("statusBar")
         ROI.setStatusBar(self.statusBar)
+        self.import_action = QtWidgets.QAction(ROI)
+        self.import_action.setObjectName("import_action")
+        self.export_action = QtWidgets.QAction(ROI)
+        self.export_action.setObjectName("export_action")
+        self.menuFiles.addAction(self.import_action)
+        self.menuFiles.addAction(self.export_action)
+        self.menuBar.addAction(self.menuFiles.menuAction())
 
         self.retranslateUi(ROI)
         QtCore.QMetaObject.connectSlotsByName(ROI)
@@ -79,6 +88,10 @@ class Ui_ROI(object):
         ROI.setWindowTitle(_translate("ROI", "ROI"))
         self.crop_btn.setText(_translate("ROI", "..."))
         self.lines_btn.setText(_translate("ROI", "..."))
+        self.clear_btn.setText(_translate("ROI", "..."))
         self.save_btn.setText(_translate("ROI", "..."))
         self.browse_btn.setText(_translate("ROI", "Browse"))
+        self.menuFiles.setTitle(_translate("ROI", "Files"))
+        self.import_action.setText(_translate("ROI", "Import ROI"))
+        self.export_action.setText(_translate("ROI", "Export ROI"))
 
