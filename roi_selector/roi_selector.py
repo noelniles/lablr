@@ -45,18 +45,21 @@ class ROISelector(QObject, Ui_ROI):
         self.connect_buttons()
         self.previously_selected_button = self.crop_btn
 
+        self.scene = Canvas(self.mainwindow)
+        self.image_display.setScene(self.scene)
+        self.setup_threads()
+        self.set_initial_image()
+
+        self.has_roi = False
+        self.roi_file = None
+
+    def setup_threads(self):
         self.worker_thread = QThread(self.mainwindow)
         self.worker = ProcessWorker(self.image_list)
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.finished.connect(self.worker.deleteLater)
         self.worker_thread.started.connect(self.worker.work)
         self.worker.image_changed.connect(self.set_image)
-
-        self.scene = Canvas(self.mainwindow)
-        self.image_display.setScene(self.scene)
-        self.set_initial_image()
-
-        self.roi_selected = False
 
     def set_initial_image(self):
         self.scene.setImage(self.image_list[0])
@@ -67,6 +70,7 @@ class ROISelector(QObject, Ui_ROI):
         self.lines_btn.clicked.connect(self.on_lines)
         self.clear_btn.clicked.connect(self.on_clear)
         self.start_btn.clicked.connect(self.on_start)
+        self.next_btn.clicked.connect(self.on_next)
 
         self.import_action.triggered.connect(self.on_import)
         self.export_action.triggered.connect(self.on_save)
@@ -85,9 +89,18 @@ class ROISelector(QObject, Ui_ROI):
         with open(filename, 'r') as fd:
             roi = json.load(fd)
 
+        self.roi_file = filename
         self.scene.draw_roi(roi)
+        self.has_roi = True
 
         print('roi: ', roi)
+
+    def on_next(self):
+        self.current_index += 1
+        self.current_image_name = self.image_list[self.current_index]
+
+        img = QImage(self.current_image_name)
+        self.set_image(img)
 
     def on_save(self):
         print('saving')
@@ -101,9 +114,11 @@ class ROISelector(QObject, Ui_ROI):
         filename, _ = QFileDialog.getSaveFileName(
             self.mainwindow, 'Save region of interest', None, 'JSON(*.json)'
         )
-
+        self.roi_file = filename
         with open(filename, 'w') as fd:
             json.dump(graphics, fd)
+
+        self.has_roi = True
 
         print('Saved region of interest to {}'.format(filename))
 
@@ -129,13 +144,21 @@ class ROISelector(QObject, Ui_ROI):
         line_icon = QIcon('icons/draw_lines.svg')
         reset_icon = QIcon('icons/reset.svg')
         start_icon = QIcon('icons/start.svg')
+        next_icon = QIcon('icons/next.svg')
         self.save_btn.setIcon(save_icon)
         self.crop_btn.setIcon(crop_icon)
         self.lines_btn.setIcon(line_icon)
         self.clear_btn.setIcon(reset_icon)
         self.start_btn.setIcon(start_icon)
+        self.next_btn.setIcon(next_icon)
 
     def on_start(self):
+        if self.roi_file is None:
+            return
+        with open(self.roi_file, 'r') as fd:
+            points = json.load(fd)
+
+        self.worker.cropper.add_roi(points['lines'])
         self.worker_thread.start()
 
     def wheelEvent(self, event):
@@ -172,10 +195,6 @@ def main():
 
     selector = ROISelector(files)
     selector.set_data_directory(args.input)
-
-    # Add the files to the selector
-    #selector.enqueue(files)
-
     selector.show()
 
     sys.exit(app.exec_())

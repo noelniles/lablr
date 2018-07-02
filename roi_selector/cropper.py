@@ -10,13 +10,18 @@ import cv2
 import numpy as np
 
 class Cropper:
-    def __init__(self, lines):
+    def __init__(self):
+        self.roi = None
         self.rect = None
-        self.lines = lines
-        self.polygon = self.lines_to_polygon(lines)
+
+    def add_roi(self, roi):
+        self.roi = roi
+        self.polygon = self.lines_to_polygon(roi)
         self.rect = cv2.boundingRect(self.polygon)
 
     def crop(self, img):
+        if self.roi is None:
+            return
         rect = self.rect
         x, y, w, h = rect
         return img[y:y+h, x:x+w].copy()
