@@ -5,13 +5,18 @@ import cv2
 import numpy as np
 
 
+
 def adjust_gamma(img, gamma=1.0):
     invgamma = 1.0 / gamma
-    table = np.array([((i/255.0)**invgamma) * 255
+    gamma_table = np.array([((i/255.0)**invgamma) * 255
         for i in np.arange(0,256)]).astype('uint8')
+    return cv2.LUT(img, gamma_table)
 
-    return cv2.LUT(img, table)
-
+def find_good_features(img):
+    corners = cv2.goodFeaturesToTrack(img, 25, 0.01, 10)
+    corners = np.uint8(corners)
+    return corners
+    
 def find_harris_corners(img):
     """Find the corners.
 

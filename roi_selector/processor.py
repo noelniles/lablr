@@ -2,18 +2,20 @@
 import argparse
 import cv2
 import json
+import sys
 from glob import glob
 
 from common import adjust_gamma
 from cropper import Cropper
 from stabilizer import Stabilizer
+from stabilizer import StabilizingMethods
 
 
 class Processor:
     def __init__(self, files, roi):
         self.files = files
         self.cropper = Cropper(roi)
-        self.stabilizer = Stabilizer()
+        self.stabilizer = Stabilizer(StabilizingMethods.GOOD_FEATURES)
         cv2.namedWindow('Results')
 
     def consume(self):
