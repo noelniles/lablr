@@ -3,8 +3,28 @@ what is happening in the outside world.
 """
 import cv2
 import numpy as np
+from PyQt5.QtGui import qRgb
+from PyQt5.QtGui import QImage
 
+gray_color_table = [qRgb(i, i, i) for i in range(256)]
 
+def cv2qimage(img, copy=False):
+    if img is None:
+        return QImage()
+
+    if img.dtype == np.uint8:
+        if len(img.shape) == 2:
+            qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_Index8)
+            qimg.setColorTable(gray_color_table)
+            return qimg.copy() if copy is True else qimg
+
+        elif len(img.shape) == 3:
+            if img.shape[2] == 3:
+                qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
+                return qimg.copy() if copy is True else qimg
+            elif img.shape[2] == 4:
+                qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_ARGM32)
+                return qimg.copy if copy else qimg
 
 def adjust_gamma(img, gamma=1.0):
     invgamma = 1.0 / gamma

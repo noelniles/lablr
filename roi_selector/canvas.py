@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import QGraphicsLineItem
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 
+
+
 class Canvas(QGraphicsScene):
     def __init__(self, parent=None):
         super(Canvas, self).__init__(parent)
@@ -19,6 +21,8 @@ class Canvas(QGraphicsScene):
         self.last_point = None
         self.is_drawing = False
         self.image = QImage()
+        self.pixmap_item = QGraphicsPixmapItem()
+        self.addItem(self.pixmap_item)
         self.last_point = QPoint()
         self.modified = False
         self.mode = 'crop'
@@ -32,10 +36,14 @@ class Canvas(QGraphicsScene):
     def set_mode(self, mode):
         self.mode = mode
 
+    def set_qimage(self, qimage):
+        self.pixmap_item.setPixmap(qimage)
+
     def setImage(self, filename):
-        self.pixmap = QPixmap(filename)
-        self.addPixmap(self.pixmap)
-        self.image = QImage(filename)
+        pixmap = QPixmap(filename)
+        self.pixmap_item.setPixmap(pixmap)
+        #self.addItem(self.pixmap_item)
+        #self.image = QImage(filename)
 
     def mouseMoveEvent(self, e):
         if e.buttons() & Qt.LeftButton and self.is_drawing:
