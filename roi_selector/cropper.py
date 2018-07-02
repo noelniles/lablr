@@ -20,7 +20,7 @@ class Cropper:
         self.rect = cv2.boundingRect(self.polygon)
 
     def crop(self, img):
-        if self.roi is None:
+        if self.roi is None or img is None:
             return
         rect = self.rect
         x, y, w, h = rect
