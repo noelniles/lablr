@@ -31,8 +31,8 @@ class ProcessWorker(QObject):
                 self.prev = crop.copy()
                 continue
             
-            self.prev = subtract_background(0.2, self.prev, crop)
+            self.prev = subtract_background(0.6, self.prev, crop)
             print('prev shape', self.prev.shape)
             res = cv2qimage(self.prev, False)
             self.image_changed.emit(res)
-            #QThread.msleep(1)
+            QThread.msleep(1)

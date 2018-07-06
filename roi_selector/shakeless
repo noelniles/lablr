@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+# Usage:  shakeless foo.avi
+# eventually outputs stable_foo.avi
+unset slow
+# export slow="nice -n 19 ionice -c3 "  # uncomment if it the PC bogs down.
+shakeless() { $slow transcode -J stabilize --mplayer_probe -i "$1" 2> /dev/null ; \
+              $slow transcode -J transform -i "$1" -y raw -o stable_"$1" ; \
+              rm "$1".trf ;  }

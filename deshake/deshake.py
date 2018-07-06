@@ -57,8 +57,13 @@ def spectrum_magnitude(img):
 def deshake_corners(ref, off):
     src = cv2.cornerHarris(np.float32(ref), 2, 3, 0.04)
     dst = cv2.cornerHarris(np.float32(off), 2, 3, 0.04)
-    xform = cv2.estimateRigidTransform(np.uint8(ref), np.uint8(off), True)
-    return xform
+    T, R, t = best_fit_transform(src, dst)
+    print('T: ', T)
+    print('R: ', R)
+    print('t: ', t)
+    return T
+    #xform = cv2.estimateRigidTransform(np.uint8(ref), np.uint8(off), True)
+    #return xform
 
 def find_peaks(img):
     """Find the peaks in the image."""
@@ -67,6 +72,49 @@ def find_peaks(img):
     print(peaks)
     return peaks
     
+def best_fit_transform(A, B):
+    """Calculate the least-squares best-fit transform that maps points in A
+    to corresponding points in B in m spatial dimensions.
+
+    Arguments:
+        A (ndarray): Nxm matrix of points
+        B (ndarray): Nxm matrix of points
+    Returns:
+        T: (m+1)x(m+1) homogenous transformation matrix that maps A to B
+        R: mxm rotation matrix
+        t: m+1 translation matrix
+    """
+    assert A.shape == B.shape, "Arrays must be the same size. A={}, B={}".format(A.shape, B.shape)
+
+    # Get the number of dimensions.
+    m = A.shape[1]
+
+    # Translate points to their centroids.
+    centroid_A = np.mean(A, axis=0)
+    centroid_B = np.mean(B, axis=0)
+    AA = A - centroid_A
+    BB = B - centroid_B
+
+    # Get the rotation matrix.
+    H = np.dot(AA.T, BB)
+    U, S, Vt = np.linalg.svd(H)
+    R = np.dot(Vt.T, U.T)
+
+    # Special reflection case.
+    if np.linalg.det(R) < 0:
+        Vt[m-1,:] += -1
+        R = np.dot(Vt.T, U.T)
+
+    # Translation.
+    t = centroid_B.T - np.dot(R, centroid_A.T)
+
+    # Homogneous transformation.
+    T = np.identity(m+1)
+    T[:m, :m] = R
+    T[:m, m] = t
+    return T, R, t
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', '--input', type=str, required=True)
@@ -77,8 +125,8 @@ if __name__ == '__main__':
     ref_img = cv2.imread(files[0], 0)
     ref_img = cv2.resize(ref_img, None, fx=0.25, fy=0.25)
 
-    print('ref_img', files[69])
-    offset_img = cv2.imread(files[75], 0)
+    print('ref_img', files[1000])
+    offset_img = cv2.imread(files[10001], 0)
     offset_img = cv2.resize(offset_img, None, fx=0.25, fy=0.25)
 
     ref_mag = spectrum_magnitude(ref_img)
@@ -89,7 +137,7 @@ if __name__ == '__main__':
 
     #xform = cv2.estimateRigidTransform(np.uint8(ref_peaks), np.uint8(off_peaks), True)
     xform = deshake_corners(ref_img, offset_img)
-    print('xform: ', xform)
+    warped = cv2.warpAffine(offset_img, xform.T, offset_img.shape[:2])
 
     plt.subplot(2,2,1)
     plt.tick_params(labelcolor='black', top='off', bottom='off', left='off', right='off')
@@ -109,9 +157,9 @@ if __name__ == '__main__':
     plt.xlabel("Reference peaks")
 
     plt.subplot(2,2,4)
-    plt.imshow(offset_mag, cmap='gray')
+    plt.imshow(warped, cmap='gray')
     plt.axis("off")
-    plt.xlabel("Offset peaks")
+    plt.xlabel("Warped")
 
     plt.show()
 
