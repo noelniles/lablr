@@ -68,7 +68,7 @@ def measure_sand(img):
     res = cv2.cvtColor(beach, cv2.COLOR_HSV2BGR)
     return (res, measure(res))
 
-def process(files, csv, thumbs=None):
+def process(files, csv, thumb_directory=None):
     fps = 30.0
     font = cv2.FONT_HERSHEY_DUPLEX
     im = cv2.imread(files[10])
@@ -88,6 +88,8 @@ def process(files, csv, thumbs=None):
 
         # Read and crop the image.
         im = cv2.imread(fn)
+        if im is None:
+            continue
         im = cv2.resize(im, None, fx=0.25, fy=0.25)
         cropped = im[y:y+h, x:x+w]
 
@@ -99,7 +101,7 @@ def process(files, csv, thumbs=None):
         text_offset = (resw//2, 90)
 
         # Record the data.
-        thumb_name = write_thumb(thumbs, res, n)
+        thumb_name = write_thumb(thumb_directory, res, n)
         datum = [n, fn, dt, percentage_beach, thumb_name]
         record(csv, datum)
 
@@ -115,6 +117,8 @@ def process(files, csv, thumbs=None):
         # Increment the frame counter.
         n += 1
 
+    return n
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -122,19 +126,22 @@ def main():
     ap.add_argument('-csv', type=str, required=True)
     ap.add_argument('-thumb', type=str)
     ap.add_argument('-n', type=int, help='number of frames to process')
-
     args = ap.parse_args()
 
-    files = glob(args.i+'/*.jpg')
-    camera_name = get_camera_name(files[0])
-    csv_basename = camera_name + '-results.csv'
-    csv_filename = args.csv
-    cv2.namedWindow('Results')
+    files = sorted(glob(args.i+'/*.jpg'))
+    nframes = args.n or len(files)
+    if nframes > len(files):
+        nframes = len(files)
 
+    csv_filename = args.csv
     thumbs_directory = args.thumb
-    process(files[0:args.n], csv_filename, thumbs_directory)
+
+    cv2.namedWindow('Results')
+    nframes_processed = process(files[0:nframes], csv_filename, thumbs_directory)
+    print('Finished. Processed {} frames'.format(nframes_processed))
+    print('Thumbnails are stored in {}'.format(thumbs_directory))
+    print('Results are stored in {}'.format(csv_filename))
 
 if __name__ == '__main__':
     main()
-
     
