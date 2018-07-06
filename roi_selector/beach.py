@@ -26,7 +26,18 @@ def filter_by_color(img):
     return cv2.bitwise_and(hsv, hsv, mask=mask)
 
 
+def measure(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    w, h = img.shape[:2]
+    size = w*h
+    nonzero = cv2.countNonZero(gray)
+
+    return nonzero / size
+
+
 def process(files):
+    fps = 30.0
+    font = cv2.FONT_HERSHEY_DUPLEX
     im = cv2.imread(files[10])
     im = cv2.resize(im, None, fx=0.25, fy=0.25)
     #r = cv2.selectROI(im)
@@ -60,9 +71,14 @@ def process(files):
         beach = filter_by_color(cropped)
 
         res = cv2.cvtColor(beach, cv2.COLOR_HSV2BGR)
+        res = cv2.resize(res, None, fx=4, fy=4)
+        resw, resh = res.shape[:2]
+        percentage_beach = measure(res)
+        text_offset = (resw//2, 90)
+        cv2.putText(res, '{:.2}% sand'.format(percentage_beach), text_offset, font, 2, (0, 0, 255), 2)
         cv2.imshow('Results', res)
 
-        if cv2.waitKey(0) == ord('q'):
+        if cv2.waitKey(1) == ord('q'):
             sys.exit(0)
             cv2.destroyAllWindows()
 
