@@ -9,25 +9,25 @@ from common import adjust_gamma
 from cropper import Cropper
 from stabilizer import Stabilizer
 from stabilizer import StabilizingMethods
+from stabilize_gcbp import make_bit_plane
 
 
 class Processor:
     def __init__(self, files, roi):
         self.files = files
-        self.cropper = Cropper(roi)
-        self.stabilizer = Stabilizer(StabilizingMethods.GOOD_FEATURES)
+        #self.cropper = Cropper(roi)
+        #self.stabilizer = Stabilizer(StabilizingMethods.GOOD_FEATURES)
         cv2.namedWindow('Results')
 
     def consume(self):
         for f in self.files:
             img = cv2.imread(f, 0)
-            crop = self.cropper.crop(img)
-            gamm = adjust_gamma(crop, gamma=2.0)
-            stab = self.stabilizer.stabilize(gamm)
+            #crop = self.cropper.crop(img)
+            #gamm = adjust_gamma(crop, gamma=2.0)
+            #stab = self.stabilizer.stabilize(gamm)
+            bitplane = make_bit_plane(img, 7)
 
-            if stab is None:
-                continue
-            cv2.imshow('Results', stab)
+            cv2.imshow('Results', bitplane)
 
             if cv2.waitKey(1) == ord('q'):
                 cv2.destroyAllWindows()
