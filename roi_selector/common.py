@@ -8,6 +8,21 @@ from PyQt5.QtGui import QImage
 
 gray_color_table = [qRgb(i, i, i) for i in range(256)]
 
+
+def subtract_background(a, Bp, It):
+    Bp = Bp.astype('float64')
+    It = It.astype('float64')
+
+    bb, bg, br = cv2.split(Bp)
+    ib, ig, ir = cv2.split(It)
+
+    b = a*bb + (1 - a)*ib
+    g = a*bg + (1 - a)*ig
+    r = a*br + (1 - a)*ir
+
+    res = cv2.merge((b, g, r))
+    return res.astype(np.uint8)
+
 def cv2qimage(img, copy=False):
     if img is None:
         return QImage()
@@ -21,10 +36,13 @@ def cv2qimage(img, copy=False):
         elif len(img.shape) == 3:
             if img.shape[2] == 3:
                 qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
-                return qimg.copy() if copy is True else qimg
+                qimg = qimg.rgbSwapped()
+                return qimg.copy() if copy else qimg
             elif img.shape[2] == 4:
                 qimg = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_ABGR32)
-                return qimg.copy if copy else qimg
+                qimg = qimg.rgbSwapped()
+                return qimg.copy() if copy else qimg
+
 
 def warp_flow(img, flow):
     h, w = flow.shape[:2]
