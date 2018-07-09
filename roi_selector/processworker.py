@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import cv2
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import QThread
@@ -21,27 +23,24 @@ class ProcessWorker(QObject):
         self.stabilizer = StabilizerGCPBM()
         self.cropper = Cropper()
         self.prev = None
+        self.tasks = OrderedDict()
 
+    def add_task(self, task):
+        """Add a task to the list of tasks.
+
+        Argument
+            task (function): must return an image.
+        Returns
+            ???
+        """
+        self.tasks.update(task.__name__, task)
+        
     def work(self):
         for f in self.file_list:
-<<<<<<< HEAD
             img = cv2.imread(f, 0)
-            stab = self.stabilizer.get_plane(img, 7)
+            #stab = self.stabilizer.get_plane(img, 7)
             #crop = self.cropper.crop(img)
             #res = cv2qimage(crop, False)
             res = cv2qimage(stab, False)
-=======
-            img = cv2.imread(f)
-
-            crop = self.cropper.crop(img)
-
-            if self.prev is None:
-                self.prev = crop.copy()
-                continue
-            
-            self.prev = subtract_background(0.6, self.prev, crop)
-            print('prev shape', self.prev.shape)
-            res = cv2qimage(self.prev, False)
->>>>>>> 7ec8c7adaa543dff71e47b6142a77c05e9879ed3
             self.image_changed.emit(res)
             QThread.msleep(1)
